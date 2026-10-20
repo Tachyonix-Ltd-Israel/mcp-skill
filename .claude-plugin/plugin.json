@@ -6,5 +6,8 @@
   "author": {
     "name": "Tachyonix",
     "url": "https://tachyonix.io"
-  }
+  },
+  "homepage": "https://github.com/Tachyonix-Ltd-Israel/mcp-skill",
+  "repository": "https://github.com/Tachyonix-Ltd-Israel/mcp-skill",
+  "license": "Apache-2.0"
 }

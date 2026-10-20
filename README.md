@@ -77,3 +77,10 @@ conector existir.
 
 Este conteúdo é gerado a partir do repositório do produto: correções e
 sugestões entram por issue, não por pull request.
+
+## Licença
+
+[Apache License 2.0](LICENSE), Copyright 2026 Tachyonix Ltd. (ver
+[NOTICE](NOTICE)). A licença cobre as skills, os commands e os scripts deste
+plugin; não cobre o Tachyonix Builder nem o conector Tachyonix Builder MCP, e
+não concede uso do nome nem dos logotipos da Tachyonix.
