@@ -1,0 +1,15 @@
+{
+  "name": "tachyonix",
+  "description": "Plugins da Tachyonix para agentes de IA que trabalham com o Tachyonix Builder no SAP.",
+  "owner": {
+    "name": "Tachyonix"
+  },
+  "plugins": [
+    {
+      "name": "tachyonix-builder",
+      "source": "./",
+      "description": "Roteiro de trabalho para criar e editar aplicações e Fontes de Dados do Tachyonix Builder no SAP S/4 com o conector Tachyonix Builder MCP: a ordem dos passos, o que perguntar ao usuário e qual ferramenta usar em cada um.",
+      "version": "0.1.0"
+    }
+  ]
+}

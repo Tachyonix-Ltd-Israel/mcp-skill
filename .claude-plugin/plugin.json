@@ -1,0 +1,10 @@
+{
+  "name": "tachyonix-builder",
+  "displayName": "Tachyonix Builder",
+  "version": "0.1.0",
+  "description": "Roteiro de trabalho para criar e editar aplicações e Fontes de Dados do Tachyonix Builder no SAP S/4 com o conector Tachyonix Builder MCP: a ordem dos passos, o que perguntar ao usuário e qual ferramenta usar em cada um.",
+  "author": {
+    "name": "Tachyonix",
+    "url": "https://tachyonix.io"
+  }
+}
