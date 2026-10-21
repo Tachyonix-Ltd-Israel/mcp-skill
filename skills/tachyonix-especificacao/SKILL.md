@@ -111,8 +111,8 @@ pergunte, e declare o valor usado.
 - **Painel**: a Consulta CDS base → o Cubo (`tipo='cubo'`, `fonte=` a base) →
   a Analítica (`tipo='analitica'`, `fonte=` o cubo) → as DataViews e a
   Analytic View no Charts (`create_dashboard`) → o relatório companheiro. Em
-  série, um de cada vez: cada um lê o anterior publicado. Na analítica, a
-  chave é desmarcada sozinha onde a geração usa view entity.
+  série, um de cada vez: cada um lê o anterior publicado. A analítica precisa
+  de ao menos um campo chave, como toda Fonte de Dados.
 - **SELECT × SELECT DISTINCT**: o painel pede o Cubo com `SELECT`, porque o
   DISTINCT subconta. É como toda Fonte de Dados nasce (`tipo_select`); não
   peça `SELECT DISTINCT` numa fonte com medida.
