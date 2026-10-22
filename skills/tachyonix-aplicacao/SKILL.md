@@ -1,6 +1,6 @@
 ---
 name: tachyonix-aplicacao
-description: Como criar uma aplicação do Tachyonix Builder pelo Builder MCP. Cobre relatório (com ou sem tela de detalhe e drill), aplicação de ação, os formulários (cadastro, atualização de tabela, customizada, cabeçalho), Modelless, Lista de Trabalho e Entrada, além das perguntas obrigatórias, do layout do formulário, dos rótulos em português, das saídas e da navegação. Use quando o pedido for uma tela, um relatório, um formulário ou uma aplicação de aprovação no Tachyonix.
+description: Como criar uma aplicação do Tachyonix Builder pelo Builder MCP. Cobre relatório (com ou sem tela de detalhe e drill), aplicação de ação, os formulários (cadastro, atualização de tabela, customizada, cabeçalho), Modelless, Lista de Trabalho e Entrada, além das perguntas obrigatórias, das colunas e filtros quando o pedido não os define, do layout do formulário, dos rótulos em português, das saídas e da navegação. Use quando o pedido for uma tela, um relatório, um formulário ou uma aplicação de aprovação no Tachyonix.
 ---
 
 # Aplicação
@@ -44,7 +44,9 @@ Faça-as de uma vez, junto com as `decisoes_pendentes` do plano:
 ## 3. Monte a tela
 
 - **Campos**: `campos=[...]` (nome nu ou `FONTE.CAMPO`). Sem `campos`, o MCP
-  escolhe e devolve em `campos_descartados` o que ficou fora e por quê.
+  põe na tela todos os campos utilizáveis da fonte e devolve em
+  `campos_descartados` o que ficou fora e por quê — por isso, se o pedido
+  não diz as colunas, escolha-as você (seção 4).
 - **Rótulos em português**: `rotulos={CAMPO: 'Rótulo'}` sempre que o texto do
   dicionário vier em inglês ou longo demais.
 - **Formulário de detalhe organizado**: em toda tela de detalhe nova, passe
@@ -79,14 +81,42 @@ Faça-as de uma vez, junto com as `decisoes_pendentes` do plano:
 - **Formulários (TT=4)**: o tipo de cada campo de entrada (lista, ajuda de
   pesquisa, componente) vai em `entradas` (`list_input_types`).
 
-## 4. Valor com moeda
+## 4. Colunas e filtros que o pedido não definiu
+
+**No máximo 6 colunas por tabela e de 1 a 3 filtros visíveis na Lista
+Principal.** Vale quando o pedido não diz quais colunas ou filtros quer; o
+que o usuário (ou a especificação) definir vale como ele definiu.
+
+**Por que importa:** sem `campos`, a tela nasce com todos os campos da fonte
+e a lista passa a rolar para o lado; sem filtro visível, a barra de filtros
+nasce vazia e o usuário não tem como recortar a lista.
+
+- **Quais 6**: as que identificam e resumem a linha — o documento ou a
+  chave, a descrição ou o nome, a data, o status, o parceiro e o valor. A
+  moeda ou a unidade de um valor entra junto e conta nas 6.
+- **Relatório com tela de detalhe**: o detalhe espelha os campos da lista.
+  Passe em `campos` tudo o que o detalhe deve mostrar e esconda na lista o
+  que passar de 6 com `main_list={colunas_ocultas: [...]}`; o detalhe se
+  organiza por `layout_formulario`. Sem tela de detalhe, passe só as 6.
+- **Cada Tabela** (`tabelas[].campos`): até 6 colunas. Se ela abre o
+  detalhe da linha (outra Tabela nasce `dentro_de` dela), os campos desse
+  detalhe vão em `formulario_campos`.
+- **Os filtros**: `filtros_lista=[{campo, visibilidade: 'visivel'}]` em 1 a 3
+  colunas visíveis da Lista Principal — as que o usuário usaria para
+  recortar a lista: data, status, empresa ou centro, fornecedor ou cliente.
+  Não confunda com `filtros`, o recorte fixo da consulta.
+- **Diga o que escolheu** no resumo da criação: o usuário troca depois com
+  `configure_main_list` (`colunas_ocultas`, `filtros_lista`) ou
+  `update_app_columns`.
+
+## 5. Valor com moeda
 
 Campo CURR/QUAN precisa da coluna de moeda/unidade na **mesma estrutura**; o
 MCP a inclui quando ela é da mesma fonte. Referência em outra tabela não
 grava como coluna: prefira a VDM standard ou a Fonte de Dados que já traz o
 valor com a moeda.
 
-## 5. Crie e confira
+## 6. Crie e confira
 
 1. `create_component(..., plan=true)` com a spec completa: confira
    `plano.estruturas`, os campos e os impedimentos.
