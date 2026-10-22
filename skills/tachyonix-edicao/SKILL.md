@@ -36,6 +36,7 @@ leitura, e a estrutura perde os campos.
 | organizar o formulário de detalhe em grupos | `layout_app_form` |
 | título, descrição, ícone, tile, vigência | `update_app` |
 | fazer uma cópia | `copy_app` |
+| **várias das mudanças acima na mesma aplicação** | `update_app_batch` |
 
 ## 3. Como chamar
 
@@ -44,6 +45,15 @@ leitura, e a estrutura perde os campos.
 2. **Grave** a mesma chamada sem `dry_run`.
 3. **Confira**: `run_backend_validation(guid, preview=5)`. Mudança na consulta
    (fonte nova, join, filtro) muda as linhas: confira as contagens.
+
+**Mais de uma mudança? Junte num lote.** Cada ferramenta regrava a aplicação
+inteira, e numa aplicação de várias telas isso leva de 30 a 75 segundos.
+`update_app_batch(guid, passos=[{tool, args}, ...])` roda as mesmas ferramentas
+em sequência, cada uma vendo o resultado da anterior, e grava uma vez só. Os
+`args` de cada passo são os que a ferramenta recebe sozinha, sem `guid`.
+Se um passo é recusado, nada é gravado e a resposta diz qual foi. Não entra no
+lote `update_app_fields`; o rótulo de campo, ali, é `configure_app_fields`
+com `rotulos`.
 
 ## 4. O que não fazer
 
