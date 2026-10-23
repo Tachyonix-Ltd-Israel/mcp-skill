@@ -1,6 +1,6 @@
 ---
 name: tachyonix-aplicacao
-description: Como criar uma aplicação do Tachyonix Builder pelo Builder MCP. Cobre relatório (com ou sem tela de detalhe e drill), aplicação de ação, os formulários (cadastro, atualização de tabela, customizada, cabeçalho), Modelless, Lista de Trabalho e Entrada, além das perguntas obrigatórias, das colunas e filtros quando o pedido não os define, do layout do formulário, dos rótulos em português, das saídas e da navegação. Use quando o pedido for uma tela, um relatório, um formulário ou uma aplicação de aprovação no Tachyonix.
+description: Como criar uma aplicação do Tachyonix Builder pelo Builder MCP. Cobre relatório (com ou sem tela de detalhe e drill), aplicação de ação, os formulários (cadastro, atualização de tabela, customizada, cabeçalho), Modelless, Lista de Trabalho e Entrada, além das perguntas obrigatórias, das colunas e filtros quando o pedido não os define, do layout do formulário, dos rótulos em português, das saídas, da navegação e do Editor de Texto (como o include ABAP lê e grava o texto). Use quando o pedido for uma tela, um relatório, um formulário ou uma aplicação de aprovação no Tachyonix.
 ---
 
 # Aplicação
@@ -80,6 +80,8 @@ Faça-as de uma vez, junto com as `decisoes_pendentes` do plano:
   e liga include, função ou navegação a cada um. `acoes=[]` nasce sem ação.
 - **Formulários (TT=4)**: o tipo de cada campo de entrada (lista, ajuda de
   pesquisa, componente) vai em `entradas` (`list_input_types`).
+- **Texto longo com formatação**: o Editor de Texto (`elementos`), que lê e
+  grava por um include ABAP (seção 6).
 
 ## 4. Colunas e filtros que o pedido não definiu
 
@@ -116,7 +118,68 @@ MCP a inclui quando ela é da mesma fonte. Referência em outra tabela não
 grava como coluna: prefira a VDM standard ou a Fonte de Dados que já traz o
 valor com a moeda.
 
-## 6. Crie e confira
+## 6. Editor de Texto
+
+**O Editor de Texto não lê nem grava o texto sozinho: quem faz isso é ABAP.**
+`elementos=[{tipo: 'editor_texto', descricao: 'Observações', include:
+'ZINC_OBSERVACOES'}]` cria a estrutura `OBSERVACOES` (tipo R) com o campo
+`OBSERVACOES_RT`. O `include` é obrigatório e não precisa existir ainda: o
+nome é livre, e o include se cria depois, no ABAP.
+
+**Por que importa:** sem código no include, o editor abre vazio e o que o
+usuário digita não é gravado. E o `<NOME>_RT` aparece como CHAR(1) na
+consulta: o CDS não aceita STRING sem tamanho, mas o texto não passa pela
+consulta, e o tamanho não o limita.
+
+Como o texto anda:
+
+1. O include gera uma **classe de determinação** (`<PREFIXO>CLDT…`), que o
+   chama com `INCLUDE <include> IF FOUND`.
+2. Na classe, o texto é `cv_data-<nome>-<nome>_rt`: o componente **dentro da
+   subestrutura do editor**, `TYPE string`. O `<nome>_rt` do nível de cima é
+   `c LENGTH 1`; não use esse.
+3. **Leitura**: o include busca o texto na coluna STRING da tabela e preenche
+   esse componente. O editor mostra o texto inteiro.
+4. **Gravação**: o runtime não grava o editor. O include da ação
+   (Incluir/Editar) recebe a mesma subestrutura e grava o texto na tabela.
+5. O conteúdo é **HTML** (títulos, parágrafos, negrito, listas): grave e leia
+   como veio.
+
+**A classe muda de nome a cada geração da aplicação** (`…001`, `…002`), e um
+include tipado pelo nome dela quebra na geração seguinte. Acesse os dados
+por `ASSIGN COMPONENT`. Leitura, no include do editor (a chave `ID` vem do
+formulário `MAIN_FORM`; o texto, da coluna `TEXTO` de `ZTABELA`):
+
+```abap
+ASSIGN COMPONENT 'MAIN_FORM' OF STRUCTURE cv_data TO FIELD-SYMBOL(<ls_form>).
+ASSIGN COMPONENT 'OBSERVACOES' OF STRUCTURE cv_data TO FIELD-SYMBOL(<ls_editor>).
+IF <ls_form> IS ASSIGNED AND <ls_editor> IS ASSIGNED.
+  ASSIGN COMPONENT 'ID' OF STRUCTURE <ls_form> TO FIELD-SYMBOL(<lv_id>).
+  ASSIGN COMPONENT 'OBSERVACOES_RT' OF STRUCTURE <ls_editor> TO FIELD-SYMBOL(<lv_texto>).
+  IF <lv_id> IS ASSIGNED AND <lv_texto> IS ASSIGNED.
+    SELECT SINGLE texto FROM ztabela INTO @<lv_texto> WHERE id = @<lv_id>.
+  ENDIF.
+ENDIF.
+```
+
+Gravação, no include da ação (`ls_registro` é a linha de `ZTABELA` que a
+ação já grava):
+
+```abap
+ASSIGN COMPONENT 'OBSERVACOES' OF STRUCTURE cv_data TO FIELD-SYMBOL(<ls_editor>).
+IF <ls_editor> IS ASSIGNED AND ( iv_action_name = 'ADD' OR iv_action_name = 'EDIT' ).
+  ASSIGN COMPONENT 'OBSERVACOES_RT' OF STRUCTURE <ls_editor> TO FIELD-SYMBOL(<lv_texto>).
+  IF <lv_texto> IS ASSIGNED.
+    ls_registro-texto = <lv_texto>.
+  ENDIF.
+ENDIF.
+```
+
+O Editor de Texto não existe em relatório, Modelless nem Lista de Trabalho, e
+na aplicação de ação é somente leitura. Numa aplicação que já existe ele entra
+por `add_app_structures` e se reconfigura por `configure_app_structure`.
+
+## 7. Crie e confira
 
 1. `create_component(..., plan=true)` com a spec completa: confira
    `plano.estruturas`, os campos e os impedimentos.
