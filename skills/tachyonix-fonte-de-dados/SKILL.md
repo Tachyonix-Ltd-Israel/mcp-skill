@@ -103,7 +103,18 @@ e o valor é numérico.
   o número sem moeda basta, use um calculado `modo: 'especialista'` com
   `cast( EKPO.NETWR as abap.dec(15,2) )`, mas **pergunte antes**: a coluna
   deixa de ser valor monetário.
-- Somar valor monetário exige o mesmo cast (`SUM( cast( … ) )`).
+- Somar valor monetário depende de como o sistema gera o CDS (o
+  `env_info` mostra o release):
+  - **S/4HANA 2022 em diante** (view entity): o cast vai dentro da
+    agregação, `formula='cast( EKPO.NETWR as abap.dec(15,2) )'` com
+    `agregacao='SUM'`; a coluna nua volta 400.
+  - **1909 a 2021** (view clássica): agregue a coluna direto,
+    `formula='EKPO.NETWR'` com `agregacao='SUM'`, sem cast; ponha a coluna de
+    moeda na fonte para separar os totais por moeda. Ali, dentro do agregado
+    só cabe a coluna: cast, conta e função voltam 400. Conta sobre a coluna
+    se faz numa fonte anterior, que a expõe, e esta agrega (fonte sobre
+    fonte).
+  O build já aplica a regra do sistema e recusa o que não grava.
 
 ## 6. Crie e confira
 

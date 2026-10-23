@@ -161,8 +161,44 @@ def _blocos(corpo, niveis):
                 yield from _blocos(conteudo, niveis)
 
 
+# Célula com cara de truncada. Numa EF os parâmetros vêm entre `< >` (`valor_alvo=<meta
+# da área>`), e um gerador de .docx que lê `< >` como marcação os apaga: a célula
+# chega como `valor_maximo=, valor_alvo=` e nada avisa. O conversor não recupera o
+# que o .docx já não tem, mas aponta onde falta.
+_PARAM_VAZIO = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?=,|;|<br>|$)")
+_FIM_CORTADO = re.compile(r"[=,{(]\s*$")
+
+
+def lacunas(texto):
+    """[(seção, célula, motivo)] das células de tabela que parecem truncadas."""
+    achados = []
+    secao = ""
+    for linha in texto.splitlines():
+        if linha.startswith("#"):
+            secao = linha.lstrip("#").strip()
+            continue
+        if not linha.startswith("|") or set(linha.strip()) <= set("|-: "):
+            continue
+        for celula in (c.strip() for c in linha.strip().strip("|").split("|")):
+            motivos = []
+            vazios = list(dict.fromkeys(_PARAM_VAZIO.findall(celula)))
+            if vazios:
+                motivos.append("parâmetro sem valor: " + ", ".join(vazios))
+            elif _FIM_CORTADO.search(celula):
+                motivos.append("termina no meio")
+            abertos = [a for a, f in ("{}", "()", "[]") if celula.count(a) > celula.count(f)]
+            if abertos and not vazios:
+                motivos.append(f"abre `{abertos[0]}` e não fecha")
+            if "<>" in celula:
+                motivos.append("`<>` vazio")
+            if motivos:
+                achados.append((secao, celula, "; ".join(motivos)))
+    return achados
+
+
 def converte(caminho):
-    """O markdown de um .docx (caminho ou objeto de arquivo)."""
+    """O markdown de um .docx (caminho ou objeto de arquivo), com a seção final
+    "Lacunas prováveis" quando alguma célula parece truncada."""
     with zipfile.ZipFile(caminho) as z:
         niveis = _estilos(z)
         raiz = ET.fromstring(z.read("word/document.xml"))
@@ -175,6 +211,14 @@ def converte(caminho):
             junto = b.startswith("- ") and blocos[i - 1].startswith("- ")
             texto += "\n" if junto else "\n\n"
         texto += b
+    faltas = lacunas(texto)
+    if faltas:
+        texto += ("\n\n## Lacunas prováveis\n\n"
+                  "Células que parecem truncadas no próprio .docx — o valor que "
+                  "falta é decisão a pedir ao usuário antes do plano.\n")
+        for secao, celula, motivo in faltas:
+            curta = celula if len(celula) <= 160 else celula[:157] + "..."
+            texto += f"\n- {secao or '(sem seção)'} — {motivo}: `{curta}`"
     return texto + "\n"
 
 

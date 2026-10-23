@@ -18,13 +18,15 @@ o gerador disse o motivo exato.
 |---|---|
 | a ferramenta recusou antes de gravar | a própria mensagem: ela nomeia o parâmetro, a regra e a saída |
 | gate `BLOQUEADO` | `gate_verdict` e os itens com severidade de erro; `validate_payload` detalha |
-| 400 numa **edição** | `mensagens_do_gerador` na resposta: o log do gerador de CDS, com a linha do SDDL |
-| 400 numa **criação** | a criação faz rollback e não sobra log; siga `como_ver_o_motivo` da resposta |
+| 400 numa **criação** ou **edição** | `mensagens_do_gerador` na resposta: as mensagens do gerador de CDS, com a linha do SDDL (`SDDL_PARSER_MSG/376`…) |
+| 500 do gerador | `error` traz o código do dump (`GETWA_NOT_ASSIGNED`, ST22); `ultima_etapa_do_gerador`, quando vem, é o último passo que ele concluiu |
 | gravou, mas algo está estranho | `run_backend_validation(guid, log=true)`: o diário do último build |
-| gravou, e o dado não é o esperado | `run_backend_validation(guid, preview=5)`: as linhas de cada CDS gerado |
+| gravou, e o dado não é o esperado | `run_backend_validation(guid, preview=5)`: as linhas de cada CDS gerado; `contagem=true` e `conferir_soma` conferem totais |
 
-`como_ver_o_motivo` descreve o procedimento: criar a mesma spec por partes e
-aplicar a parte que falha por **edição**, que devolve `mensagens_do_gerador`.
+A mensagem do topo de um 400 é quase sempre a genérica "Exception raised
+without specific error"; o motivo está em `mensagens_do_gerador`. Só quando
+ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
+**edição** numa aplicação que já existe, que devolve o diário do build.
 
 ## 2. Situações conhecidas
 

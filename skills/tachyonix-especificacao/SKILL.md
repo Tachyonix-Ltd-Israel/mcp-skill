@@ -25,7 +25,10 @@ build, um por vez.
   devolve o texto dele; grave-o e rode
   `python docx_para_md.py <arquivo.docx | pasta | lote.zip> [saída]`. Ele mantém
   as tabelas, separa as condições de join coladas e troca as aspas
-  tipográficas (‘P’) pelas retas, que o CDS exige.
+  tipográficas (‘P’) pelas retas, que o CDS exige. Quando alguma célula
+  parece truncada (`valor_maximo=, valor_alvo=`, uma chave aberta sem
+  fechar), ele as lista no fim, em **Lacunas prováveis**: o valor que falta
+  não está no `.docx` — pergunte-o ao usuário junto das decisões do plano.
 - **Lote em `.zip`**: converta direto do zip. No Windows, nomes que só diferem
   na maiúscula (`…__Especificaco…` e `…__especificaco…`, a EF e a
   reexportação) se sobrescrevem ao extrair e um documento some; o conversor
@@ -132,7 +135,13 @@ pergunte, e declare o valor usado.
   quando recusar, use a saída que ele dá e declare.
 - **Volumetria e aceite** foram medidos no ambiente do autor. Compare a forma
   (grão da lista, drill que filtra pela linha, total que bate com a soma dos
-  itens), não o número.
+  itens), não o número. `run_backend_validation` confere os dois no serviço
+  gerado: `contagem=true` dá o total de linhas de cada CDS, e
+  `conferir_soma={total, itens, chave}` compara o total de um documento com
+  a soma dos itens dele.
+- **Tabela física prescrita, VDM disponível**: `map_source_fields(origem,
+  destino, campos)` diz, campo a campo, o equivalente na VDM e o que ela não
+  tem — é o que decide se a troca é viável antes de propô-la.
 
 ## 8. Lote de EFs
 
