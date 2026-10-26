@@ -69,5 +69,8 @@ com `rotulos`.
 
 A resposta de uma escrita que falha sobre aplicação existente traz
 `mensagens_do_gerador`, com o texto do gerador de CDS. Leia antes de tentar de
-novo (tema `tachyonix-diagnostico`). Uma gravação que falha não altera a
-aplicação.
+novo (tema `tachyonix-diagnostico`). Uma gravação que falha não muda a
+definição da aplicação, mas o gerador remove os serviços dela antes de
+recriar. O MCP regrava sozinho a versão que estava gravada, e `restauracao`
+diz se os serviços voltaram; com `restaurada: false`, a aplicação fica sem
+serviços até a próxima gravação boa.

@@ -34,6 +34,9 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
   ferramenta o tem. Não reenvie em outro nome.
 - **403 só na gravação**: sessão/CSRF do servidor ligando para si mesmo. É
   configuração do sistema; avise o usuário, não repita.
+- **403 nos serviços depois de uma edição que falhou**: o gerador remove os
+  CDS antes de recriar. O MCP já regrava a versão anterior (`restauracao`);
+  se ela não voltou, corrija o motivo e grave de novo.
 - **Timeout do cliente** numa criação longa: a aplicação pode ter nascido
   assim mesmo. Procure-a (`list_apps`, ou pelo pacote em `list_packages`)
   antes de repetir, ou nasce em dobro.
@@ -48,6 +51,8 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 |---|---|---|
 | 400 com `/` num calculado | o CDS só divide FLTP com a barra | `DIVISION(a, b, casas)` ou `DIV(a, b)` |
 | 400 com valor CURR/QUAN | a moeda/unidade não está na mesma estrutura, ou mora em outra tabela | traga a referência junto, use a VDM, ou `cast(...)` com a concordância do usuário |
+| total CURR/QUAN de uma fonte recusado na aplicação, com referência `DDDDLCHARTYPES` | a fonte somou sem ligar a moeda ao total | regrave o campo na fonte (`update_app_special_fields`) com a moeda nos campos dela |
+| `/TACHYON/MESSAGES/137` "Método: Activate" | o CDS passou na sintaxe e falhou na ativação; o gerador corta o motivo | leia `leitura_da_ativacao`; antes de mudar a spec, confira se a mesma grava em outro sistema |
 | `SDDL_PARSER_MSG/024` "não está na GROUP BY" | agregação sobre coluna fora do agrupamento | deixe o MCP envelopar; não escreva `SUM(` à mão no calculado da fonte |
 | 400 com agregação + CASE | o CASE não entra no GROUP BY | CASE na aplicação, ou fonte `cubo`/`analitica` |
 | `SDDL_PARSER_MSG/005` "name not unique" | o mesmo nome em duas estruturas | alias com sufixo da estrutura (o MCP faz sozinho; não copie campo de outra app) |

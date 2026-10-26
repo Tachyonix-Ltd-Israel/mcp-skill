@@ -96,8 +96,8 @@ pergunte, e declare o valor usado.
 | Coluna "Texto" ao lado do código, ou campo de outra fonte numa estrutura | `campos_especiais=[{tipo: 'calculado', nome: 'LIFNR_TXT', formula: 'LFA1.NAME1', em: 'MAIN_LIST'}]` — não vale para CURR/QUAN |
 | Chave S que o DDIC não marca (MATDOC) | `chaves_por_estrutura={NomeEstrutura: [...]}`; a P nunca tem chave |
 | *(oculto)* | `main_list.colunas_ocultas` na M; `layout_formulario.campos_ocultos` na P |
-| Fonte agregada `…_SUM` | Fonte de Dados `servico` com `campos_especiais` de `agregacao`, criada antes; na aplicação, uma entrada de `tabelas` sem `campos`, ligada por LEFT OUTER JOIN pela chave do documento, e o total como calculado `formula: '<FONTE>.SUM_NETWR'` |
-| `SUM(EKPO.NETWR)` com a moeda em outra tabela | não grava como está: `formula: 'cast( EKPO.NETWR as abap.dec(15,2) )'`, `modo: 'especialista'`. O total sai sem moeda — declare |
+| Fonte agregada `…_SUM` | Fonte de Dados `servico` com `campos_especiais` de `agregacao`, criada antes, com a coluna de moeda/unidade do valor nos campos dela (o build liga a moeda ao total); na aplicação, uma entrada de `tabelas` ligada por LEFT OUTER JOIN pela chave do documento, com o total e a moeda dele em `campos` |
+| `SUM(EKPO.NETWR)` sem a moeda na fonte | o build recusa: traga a moeda para a fonte. Se só o número basta, `formula: 'cast( EKPO.NETWR as abap.dec(15,2) )'`, `modo: 'especialista'` (view entity); o total sai sem moeda — declare |
 | CURR/QUAN com a moeda "oculta na mesma estrutura" vinda de OUTRA tabela (`EKPO.NETWR` com `EKKO.WAERS`) | o gerador recusa; o plano mostra `moeda_unidade.situacao`, e a saída é o cast ou a VDM. Referência da própria tabela (`EKPO.MENGE` com `EKPO.MEINS`) grava |
 | Percentual | `DIVISION(a, b, casas)`, nunca `/` |
 | Ações (§8) | `acoes=[{template, nome, descricao, icone, include, motivo, confirmar: {titulo, mensagem, ok, cancelar}, exibir_em, ao_executar, atualizar_apos_executar}]`; "nenhuma" é `acoes=[]` |
@@ -116,6 +116,13 @@ pergunte, e declare o valor usado.
   Analytic View no Charts (`create_dashboard`) → o relatório companheiro. Em
   série, um de cada vez: cada um lê o anterior publicado. A analítica precisa
   de ao menos um campo chave, como toda Fonte de Dados.
+- **Sem o conector do Tachyonix Charts** nesta sessão: confira antes o
+  `.mcp.json` do projeto, que pode registrá-lo. Se ele não existe mesmo,
+  a estrutura V não se cria sozinha — pergunte ao usuário entre (a) criar a
+  DataView no app Tachyonix Charts e depois pôr a V na tela por
+  `add_app_structures(elementos=[{tipo: 'dataview', guid_consulta, calc}])`,
+  ou (b) trocar o gráfico por um microchart numa grade (`saidas` com
+  `tipo: 'COLUMN'`), e declare a troca nas divergências.
 - **SELECT × SELECT DISTINCT**: o painel pede o Cubo com `SELECT`, porque o
   DISTINCT subconta. É como toda Fonte de Dados nasce (`tipo_select`); não
   peça `SELECT DISTINCT` numa fonte com medida.
