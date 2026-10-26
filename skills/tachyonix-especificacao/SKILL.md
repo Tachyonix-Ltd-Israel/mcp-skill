@@ -40,7 +40,7 @@ build, um por vez.
 
 | Sinal no documento | Tipo | Caminho |
 |---|---|---|
-| "exclusivamente em linguagem de negócio", "nenhum nome técnico" | EF de negócio | descubra as fontes: `search_sap_objects` (termo em português), `search_cds_views`, `get_source_fields(campos=[...])`; os controles saem do vocabulário (§4) |
+| "exclusivamente em linguagem de negócio", "nenhum nome técnico" | EF de negócio | descubra as fontes: `search_sap_objects` (termo em português; leia `entidades`, a tabela e a VDM de cada uma), `search_cds_views`, `get_source_fields(campos=[...])`; os controles saem do vocabulário (§4) |
 | EF de negócio com o bloco "ESPECIFICAÇÃO TÉCNICA DA VERSÃO VIGENTE" | híbrida | use o bloco técnico: `TABELA-CAMPO` é `TABELA.CAMPO`, `A~X = B~X` é um join, e aliases como `VTOT_0` são calculados da versão anterior — o significado está na parte de negócio |
 | "Parâmetros de execução" (§0), tabela de joins, uma tabela por estrutura | EF técnica | tradução direta (§5) |
 | cadeia VDM → Cubo → Analítica → DataViews | painel analítico | §6 |

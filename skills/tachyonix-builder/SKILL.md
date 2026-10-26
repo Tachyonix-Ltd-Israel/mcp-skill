@@ -20,9 +20,14 @@ usuário, não do agente.
    parâmetro.
 1. **Confira o ambiente.** `env_info`: sistema, mandante e usuário. Na edição
    ABAP, se `escrita_disponivel` vier `false`, pare e avise: nada vai gravar.
-2. **Ache a fonte pela VDM standard, não pela tabela.** `search_cds_views`
-   (por termo ou por `tabela`), `get_source_info` e
-   `get_source_fields(campos=[...])` para conferir só os campos que interessam.
+2. **Ache a fonte pela VDM standard, não pela tabela.** Termo de negócio em
+   português (o que a especificação escreve): `search_sap_objects` — as
+   `entidades` trazem a tabela e a VDM juntas ("pedido de compra" → EKKO e
+   I_PURCHASEORDERAPI01). Entre duas VDMs da mesma entidade, prefira a
+   liberada (`liberacao: RELEASED`). Tabela conhecida: `search_cds_views(tabela=...)` dá as
+   candidatas, com o sucessor indicado pela SAP e a `liberacao` de cada uma.
+   Confira com `get_source_info` e `get_source_fields(campos=[...])` só os
+   campos que interessam.
    Tabela transparente é exceção justificada: campo que nenhuma view expõe,
    tabela Y*/Z*, ou a especificação que a prescreve — aí vale a especificação,
    e a VDM é mencionada uma vez, sem troca por conta própria. Termo de

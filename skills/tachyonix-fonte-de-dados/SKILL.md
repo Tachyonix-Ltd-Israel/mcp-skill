@@ -30,7 +30,7 @@ O catálogo completo está em `list_component_types`.
 ## 2. Fontes e joins
 
 - A fonte base vai em `tabela` (ou `fonte`, se for outra Fonte de Dados).
-  Prefira a VDM standard (`I_PURCHASEORDERITEM` no lugar de `EKPO`).
+  Prefira a VDM standard e liberada (`I_PURCHASEORDERITEMAPI01` no lugar de `EKPO`).
 - As outras fontes vão em `tabelas`, cada uma com o relacionamento:
   `[{tabela: 'EKPO', campos: [...], join: {tipo: 'inner', de: 'EKKO',
   condicoes: [{campo: 'EBELN'}]}}]`. `get_joins` diz a condição entre duas
