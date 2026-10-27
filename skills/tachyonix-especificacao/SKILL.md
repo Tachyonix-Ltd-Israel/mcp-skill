@@ -59,8 +59,43 @@ técnico e descrição. Para cada um, anote:
 - o destino declarado, os critérios de aceite e as divergências que a EF já
   declara.
 
+Duas fontes de informação antes do mapa:
+
+- **A EF técnica gêmea**, quando existe (o mesmo nome noutra pasta, às vezes
+  com o sufixo `_MCP`): ela nomeia o que a EF de negócio só descreve — as datas
+  da linha do tempo, os valores e as cores dos selos, as séries dos
+  microcharts, as tabelas de texto e o calendário. Use-a como intenção; se ela
+  prescreve tabela física e a VDM serve, traduza com `map_source_fields`.
+- **O que já está construído**: `list_packages(guid_pacote=<destino>)` e os
+  subpacotes dele. Aplicação que já existe se confere
+  (`get_app_for_edit(resumo=true)`, `run_backend_validation(preview=3)`) e se
+  edita; criar de novo com outro nome duplica. O plano avisa quando o pacote
+  já tem uma parecida.
+
 Mostre ao usuário o resumo — quantas fontes, aplicações e DataViews — e faça
 de uma vez as perguntas que sobrarem (§7).
+
+## 3.1 O plano é a saída do MCP, não um texto
+
+**Planeje a cadeia inteira com `plan_chain`** antes de gravar o primeiro
+objeto: a fonte de soma, a do cabeçalho, o cubo, a analítica e a aplicação, na
+ordem, cada passo com os argumentos de `create_component`. O passo que cita a
+fonte de um passo anterior a lê pela estrutura simulada, e por isso a
+aplicação sobre uma fonte que ainda não existe recebe o mesmo plano de quem já
+existe. O plano está pronto quando:
+
+- todo passo volta `ok` — sem impedimento; os avisos estão lidos e decididos;
+- toda VDM e todo campo da EF têm destino, ou uma decisão de ficar de fora;
+- todo microchart de várias séries (`COLUMN`, `COMPARISON`, `DELTA`, `FLOW`)
+  tem as séries em `dados`, e todo selo tem os valores e as cores;
+- num painel, toda dimensão é a coluna de TEXTO (o nome, a descrição), e a
+  base está no grão da medida (o item, quando a medida é do item);
+- o que já existe no destino foi conferido (§3);
+- nenhuma conclusão de uma sessão anterior virou regra sem ser medida de novo
+  — o que falhou ontem pode ter sido o ambiente.
+
+Guarde no plano a `chamada` de cada passo: é o que se executa, e é o que se
+revisa.
 
 ## 4. O vocabulário dos controles
 
@@ -74,13 +109,15 @@ de uma vez as perguntas que sobrarem (§7).
 | Rosca de participação | `HARVEY` |
 | Medidor circular | `RADIAL` |
 | Barra de progresso | `PROGRESS` |
-| Avatar com iniciais | `AVATAR` (`exibir_como: 'iniciais'`) |
+| Avatar com iniciais | `AVATAR` (`exibir_como: 'iniciais'`) no campo do **nome** — as iniciais saem do valor do campo, e sobre um código o avatar mostra os dois primeiros dígitos |
 | Ícone | `STATUS` fixo com o ícone da categoria (`sap-icon://…`): `ICON` mostra o **valor** do campo como ícone |
-| Linha do tempo (num campo) | `FLOW`, não a estrutura Linha do Tempo (`timelines`) |
+| Linha do tempo (num campo) | `FLOW` com as datas em `dados`, não a estrutura Linha do Tempo (`timelines`) |
 
-Configuração de cada um em `list_output_types`. Meta, teto e faixa "da área"
-sem número (`<meta da área>`) são parâmetros: use a sugestão da EF ou
-pergunte, e declare o valor usado.
+Configuração de cada um em `list_output_types`. `COLUMN`, `COMPARISON`,
+`STACKED`, `DELTA` e `FLOW` exigem as séries em `dados` (`[{titulo,
+campo|valor}]`): sem elas o build recusa. Meta, teto e faixa "da área" sem
+número (`<meta da área>`) são parâmetros: use a sugestão da EF ou pergunte, e
+declare o valor usado.
 
 ## 5. Da EF técnica para os parâmetros
 
@@ -93,11 +130,11 @@ pergunte, e declare o valor usado.
 | `M/P/T/P/T` (drill) | a Tabela do 2º nível com `dentro_de` = `nome` da Tabela do 1º; a P do 2º nível nasce com ela, e os campos dela vão em `formulario_campos` qualificados pela fonte da Tabela-pai (`EKPO.EBELP`) |
 | Estrutura V | `elementos=[{tipo: 'dataview', guid_consulta, calc, dentro_de?}]`, com a DataView já criada (`list_dataviews`) |
 | Fonte "texto/descrição" por LEFTOUTERJOIN com literal de idioma | entrada de `tabelas` **sem `campos`** (entra só na consulta): `{tabela: 'T161T', join: {tipo: 'left', de: 'EKKO', condicoes: [{campo: 'BSTYP'}, {campo: 'BSART'}, {campo: 'SPRAS', valor: 'P'}]}}` |
-| Coluna "Texto" ao lado do código, ou campo de outra fonte numa estrutura | `campos_especiais=[{tipo: 'calculado', nome: 'LIFNR_TXT', formula: 'LFA1.NAME1', em: 'MAIN_LIST'}]` — não vale para CURR/QUAN |
+| Coluna "Texto" ao lado do código, ou campo de outra fonte na Lista Principal | a fonte em `tabelas` sem `campos` e a coluna em `campos`, qualificada: `campos=['EBELN', 'LFA1.NAME1']` — entra na Lista Principal e no detalhe que a espelha, e o CURR/QUAN traz a moeda/unidade da mesma fonte junto |
 | Chave S que o DDIC não marca (MATDOC) | `chaves_por_estrutura={NomeEstrutura: [...]}`; a P nunca tem chave |
 | *(oculto)* | `main_list.colunas_ocultas` na M; `layout_formulario.campos_ocultos` na P |
-| Fonte agregada `…_SUM` | Fonte de Dados `servico` com `campos_especiais` de `agregacao`, criada antes, com a coluna de moeda/unidade do valor nos campos dela (o build liga a moeda ao total); na aplicação, uma entrada de `tabelas` ligada por LEFT OUTER JOIN pela chave do documento, com o total e a moeda dele em `campos` |
-| `SUM(EKPO.NETWR)` sem a moeda na fonte | o build recusa: traga a moeda para a fonte. Se só o número basta, `formula: 'cast( EKPO.NETWR as abap.dec(15,2) )'`, `modo: 'especialista'` (view entity); o total sai sem moeda — declare |
+| Fonte agregada `…_SUM` | Fonte de Dados `servico` com `campos_especiais` de `agregacao` sobre a COLUNA pura, criada antes, com a coluna de moeda/unidade do valor nos campos dela (o build liga a moeda ao total); na aplicação, a fonte em `tabelas` **sem `campos`**, por LEFT OUTER JOIN pela chave do documento, e o total em `campos` qualificado (`campos=[..., 'YSUM.VALOR_TOTAL']`) — a moeda dela vem junto. Com `campos` na entrada de `tabelas` ela vira uma grade, não coluna da lista |
+| `SUM(EKPO.NETWR)` sem a moeda na fonte | o build recusa: traga a moeda para a fonte. Se só o número basta e o sistema é 2022 ou mais novo (view entity), `formula: 'cast( EKPO.NETWR as abap.dec(15,2) )'`, `modo: 'especialista'`; o total sai sem moeda — declare. No 1909 o cast DENTRO da agregação volta 400 (`SDDL_PARSER_MSG/376`) |
 | CURR/QUAN com a moeda "oculta na mesma estrutura" vinda de OUTRA tabela (`EKPO.NETWR` com `EKKO.WAERS`) | o gerador recusa; o plano mostra `moeda_unidade.situacao`, e a saída é o cast ou a VDM. Referência da própria tabela (`EKPO.MENGE` com `EKPO.MEINS`) grava |
 | Percentual | `DIVISION(a, b, casas)`, nunca `/` |
 | Ações (§8) | `acoes=[{template, nome, descricao, icone, include, motivo, confirmar: {titulo, mensagem, ok, cancelar}, exibir_em, ao_executar, atualizar_apos_executar}]`; "nenhuma" é `acoes=[]` |
@@ -115,14 +152,29 @@ pergunte, e declare o valor usado.
   a Analítica (`tipo='analitica'`, `fonte=` o cubo) → as DataViews e a
   Analytic View no Charts (`create_dashboard`) → o relatório companheiro. Em
   série, um de cada vez: cada um lê o anterior publicado. A analítica precisa
-  de ao menos um campo chave, como toda Fonte de Dados.
+  de ao menos um campo chave, como toda Fonte de Dados. Na base:
+  - o **grão é o da medida**: valor e quantidade do item pedem a base no item,
+    com o cabeçalho juntado — não o cabeçalho com uma fonte de soma ao lado;
+  - **cada recorte com o seu texto** ("nome, nunca código"): a fonte de texto
+    juntada com o idioma (`{campo: 'LANGUAGE', variavel: 'sy-langu'}` ou o
+    literal da EF), e a coluna de texto é a dimensão — o Charts não liga
+    código a texto;
+  - o **calendário corporativo** que a EF cita é uma tabela do cliente:
+    procure-a (`search_sap_objects(term='calendar', environment=...)` — a
+    descrição de tabela custom costuma estar em inglês) e junte-a pela data do
+    fato; sem ela, `I_CALENDARDATE` (ano, trimestre, mês e ano-mês). Não
+    calcule mês, bimestre ou semestre com fórmula numa fonte que agrega.
+  - **No cubo**, a soma de valor/quantidade é a COLUNA pura com a moeda ou a
+    unidade dela entre as dimensões, como na fonte. Ranking (Top N) só a
+    analítica faz.
 - **Sem o conector do Tachyonix Charts** nesta sessão: confira antes o
   `.mcp.json` do projeto, que pode registrá-lo. Se ele não existe mesmo,
   a estrutura V não se cria sozinha — pergunte ao usuário entre (a) criar a
   DataView no app Tachyonix Charts e depois pôr a V na tela por
   `add_app_structures(elementos=[{tipo: 'dataview', guid_consulta, calc}])`,
   ou (b) trocar o gráfico por um microchart numa grade (`saidas` com
-  `tipo: 'COLUMN'`), e declare a troca nas divergências.
+  `tipo: 'COLUMN'` e as séries em `dados`), e declare a troca nas
+  divergências.
 - **SELECT × SELECT DISTINCT**: o painel pede o Cubo com `SELECT`, porque o
   DISTINCT subconta. É como toda Fonte de Dados nasce (`tipo_select`); não
   peça `SELECT DISTINCT` numa fonte com medida.
@@ -154,7 +206,12 @@ pergunte, e declare o valor usado.
 
 - Siga as famílias: a fonte agregada `…_SUM` é compartilhada entre o
   relatório e a ação da mesma versão — crie uma vez e reaproveite.
-- Antes de criar, confira se o nome já existe (o plano mostra a colisão).
+- Antes de criar, confira se o nome já existe (o plano mostra a colisão) e o
+  que já está no destino (§3): num lote, parte das EFs pode já estar
+  construída.
+- Um plano por EF (`plan_chain`), não um modelo de plano para o lote: o que é
+  comum às EFs vale como checklist (§3.1), e o que é de cada uma — a VDM, os
+  campos, as séries — só o plano dela confere.
 - Uma gravação de cada vez, na ordem da EF; leia o motivo antes de repetir
   (tema `tachyonix-diagnostico`).
 

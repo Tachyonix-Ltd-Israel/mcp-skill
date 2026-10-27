@@ -107,7 +107,8 @@ e o valor é numérico.
   `formula='EKPO.NETWR'` com `agregacao` `SUM`, `MIN` ou `MAX`, e ponha a
   coluna de moeda/unidade dela nos campos da fonte. O build liga a moeda ao
   total: ele sai com a moeda, separado por ela, e a aplicação sobre a fonte
-  monta lista e detalhe com ele. Vale em qualquer release; sem a coluna de
+  monta lista e detalhe com ele. Vale em qualquer release, e vale no **cubo**
+  (ali a soma vira anotação sobre a coluna, que leva a moeda); sem a coluna de
   moeda/unidade, o build recusa.
   - Só o número, sem a moeda? Num S/4HANA 2022 em diante (view entity) o
     `cast( EKPO.NETWR as abap.dec(15,2) )` dentro da agregação também grava,
@@ -121,7 +122,10 @@ e o valor é numérico.
 ## 6. Crie e confira
 
 1. `plan_component(tipo='servico', ...)` ou `create_component(...,
-   plan=true)`: leia impedimentos e decisões pendentes.
+   plan=true)`: leia impedimentos e decisões pendentes. Quando a fonte é um
+   passo de uma cadeia (a soma, a base, o cubo, a analítica e a aplicação
+   sobre elas), planeje a cadeia inteira com `plan_chain`: o passo que cita a
+   fonte de um passo anterior a lê pela estrutura simulada.
 2. Pergunte o destino e o nome técnico (`nome_sap`, prefixo Y).
 3. `create_component(tipo=..., descricao=..., nome_sap=..., guid_pacote=...,
    transporte=..., tabela=..., campos=..., filtros=..., campos_especiais=...)`.
