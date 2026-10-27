@@ -52,7 +52,7 @@ Faça-as de uma vez, junto com as `decisoes_pendentes` do plano:
 - **Formulário de detalhe organizado**: em toda tela de detalhe nova, passe
   `layout_formulario={grupos: [{titulo: 'Identificação', campos: [...]},
   ...], campos_ocultos: [...]}`, com 4 ou 5 campos por grupo. Chave e
-  obrigatório não se ocultam.
+  obrigatório não se ocultam. Separe por **títulos** (seção 5).
 - **Outras tabelas e drill**: `tabelas=[{tabela, campos, join, dentro_de?}]`.
   Sem `dentro_de` a tabela fica no detalhe da lista; com `dentro_de` ela
   nasce no detalhe de outra tabela (pedido → itens → material). O detalhe da
@@ -81,7 +81,7 @@ Faça-as de uma vez, junto com as `decisoes_pendentes` do plano:
 - **Formulários (TT=4)**: o tipo de cada campo de entrada (lista, ajuda de
   pesquisa, componente) vai em `entradas` (`list_input_types`).
 - **Texto longo com formatação**: o Editor de Texto (`elementos`), que lê e
-  grava por um include ABAP (seção 6).
+  grava por um include ABAP (seção 7).
 
 ## 4. Colunas e filtros que o pedido não definiu
 
@@ -111,14 +111,35 @@ nasce vazia e o usuário não tem como recortar a lista.
   `configure_main_list` (`colunas_ocultas`, `filtros_lista`) ou
   `update_app_columns`.
 
-## 5. Valor com moeda
+## 5. Títulos, não painéis
+
+**Separe os campos do formulário com títulos, no próprio formulário.** É o
+`tipo` default de `layout_formulario`: cada grupo vira um título (o elemento
+"Título" do menu "+") seguido dos campos dele.
+
+**Por que importa:** painel e aba põem cada grupo numa caixa ou numa guia
+própria. Ninguém pediu essa divisão, e ela pesa na tela: o usuário vê
+"grupos" onde queria um formulário só, separado por assunto.
+
+- **Painel ou aba só quando o usuário pedir.** Pediu painel ou grupo:
+  `tipo: 'painel'`. Pediu aba: `tipo: 'tab'`. Nada disso no pedido: título.
+- **Entre os dois, o painel.** Pediu "grupos" ou "painéis" sem dizer aba: é
+  painel. `paineis` sem `layout` também cria painel; aba só com
+  `layout: 'aba'`.
+- **Numa aplicação que já existe**, `layout_app_form` com o mesmo objeto. Um
+  campo que está num painel ou aba não vai para um título: tire o grupo
+  antes com `remove_app_structures(paineis=[{em, painel}])` (os campos ficam
+  no formulário) e aplique os títulos. Os dois passos cabem numa gravação só
+  em `update_app_batch`.
+
+## 6. Valor com moeda
 
 Campo CURR/QUAN precisa da coluna de moeda/unidade na **mesma estrutura**; o
 MCP a inclui quando ela é da mesma fonte. Referência em outra tabela não
 grava como coluna: prefira a VDM standard ou a Fonte de Dados que já traz o
 valor com a moeda.
 
-## 6. Editor de Texto
+## 7. Editor de Texto
 
 **O Editor de Texto não lê nem grava o texto sozinho: quem faz isso é ABAP.**
 `elementos=[{tipo: 'editor_texto', descricao: 'Observações', include:
@@ -179,7 +200,7 @@ O Editor de Texto não existe em relatório, Modelless nem Lista de Trabalho, e
 na aplicação de ação é somente leitura. Numa aplicação que já existe ele entra
 por `add_app_structures` e se reconfigura por `configure_app_structure`.
 
-## 7. Crie e confira
+## 8. Crie e confira
 
 1. `create_component(..., plan=true)` com a spec completa: confira
    `plano.estruturas`, os campos e os impedimentos.

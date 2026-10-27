@@ -33,7 +33,8 @@ leitura, e a estrutura perde os campos.
 | configurar Tabela, Editor, Anexo, formulário de detalhe, grupo ou Process Flow | `configure_app_structure` |
 | acrescentar ou remover Tabela, sub-tela, Linha do Tempo, Cabeçalho, anexos | `add_app_structures` / `remove_app_structures` |
 | configurar ou acrescentar botões | `configure_app_actions` |
-| organizar o formulário de detalhe em grupos | `layout_app_form` |
+| organizar o formulário de detalhe por assunto — com títulos; painel ou aba só se o usuário pedir, e entre os dois o painel | `layout_app_form` |
+| trocar painéis ou abas por títulos | `remove_app_structures(paineis=[...])` e depois `layout_app_form`, juntos em `update_app_batch` |
 | título, descrição, ícone, tile, vigência | `update_app` |
 | fazer uma cópia | `copy_app` |
 | **várias das mudanças acima na mesma aplicação** | `update_app_batch` |
