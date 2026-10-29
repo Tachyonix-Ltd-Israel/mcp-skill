@@ -188,6 +188,11 @@ function Testa-Builder([string]$url, [string]$basic) {
         else { $res.Erro = 'env_info não respondeu: ' + $chamada.Erro }
         return $res
     }
+    # a recusa vem como texto, não JSON: a do usuário sem S_DEVELOP, por exemplo
+    if ($chamada.Corpo.result.isError -eq $true) {
+        $res.Erro = 'o servidor recusou o env_info: ' + $chamada.Corpo.result.content[0].text
+        return $res
+    }
     $res.Info = $chamada.Corpo.result.content[0].text | ConvertFrom-Json
     $res.Ok = $true
     return $res
