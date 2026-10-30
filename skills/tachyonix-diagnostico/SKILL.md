@@ -40,11 +40,24 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 - **403 `/IWFND/MED/101` num CDS** (o `motivo` em `run_backend_validation`):
   o serviço está registrado e o nó ICF dele não foi criado. Esperar não
   resolve. Acontece quando várias aplicações são gravadas ao mesmo tempo no
-  mesmo sistema: grave uma por vez. Uma nova gravação da aplicação publica os
-  serviços de novo.
+  mesmo sistema. Uma nova gravação da aplicação publica os serviços de novo.
+- **Gravação recusada com "outra gravação de aplicação está em andamento"**:
+  o MCP grava uma aplicação por vez no mesmo sistema e esperou a vez sem
+  conseguir. Nada foi gravado; chame de novo em seguida, sem mudar nada.
 - **`ok` do `run_backend_validation`** é o da aplicação inteira: um CDS fora
-  basta para a tela não abrir. `aplicacao_lida: false` é GUID que o sistema
-  não devolve; confira o GUID antes de recriar.
+  basta para a tela não abrir, e `conferir_soma` que não bate também o põe em
+  `false`. `ok: null` com `sem_servico_proprio` é cubo ou consulta, que não
+  publicam serviço: valide a analítica ou a aplicação que os usa.
+  `aplicacao_lida: false` é GUID que o sistema não devolve; confira o GUID
+  antes de recriar. Não peça `wait`: esperar não muda o resultado; o que muda
+  é uma gravação.
+- **Estado de uma aplicação** (ativa, versão): `get_app_for_edit(resumo=true)`
+  traz `Status` e `Versao`, sem ler o catálogo inteiro.
+- **Total da lista que não bate com a soma dos itens**: o gerador descarta, nas
+  estruturas abaixo da Lista Principal, as linhas com uma chave inicial — a de
+  texto em branco em qualquer release, e a numérica (EKBE com `ZEKKN = '00'`)
+  no 1909. O plano avisa; a saída é `chave_vazia` no campo, onde o sistema tem
+  a opção, ou tirar o campo da chave da Tabela.
 - **Timeout do cliente** numa criação longa: a aplicação pode ter nascido
   assim mesmo. Procure-a (`list_apps`, ou pelo pacote em `list_packages`)
   antes de repetir, ou nasce em dobro.
