@@ -137,8 +137,8 @@ declare o valor usado.
 | Fonte agregada `…_SUM` | Fonte de Dados `servico` com `campos_especiais` de `agregacao` sobre a COLUNA pura, criada antes, com a coluna de moeda/unidade do valor nos campos dela (o build liga a moeda ao total); na aplicação, a fonte em `tabelas` **sem `campos`**, por LEFT OUTER JOIN pela chave do documento, e o total em `campos` qualificado (`campos=[..., 'YSUM.VALOR_TOTAL']`) — a moeda dela vem junto. Com `campos` na entrada de `tabelas` ela vira uma grade, não coluna da lista |
 | `SUM(EKPO.NETWR)` sem a moeda na fonte | o build recusa: traga a moeda para a fonte. Se só o número basta e o sistema é 2022 ou mais novo (view entity), `formula: 'cast( EKPO.NETWR as abap.dec(15,2) )'`, `modo: 'especialista'`; o total sai sem moeda — declare. No 1909 o cast DENTRO da agregação volta 400 (`SDDL_PARSER_MSG/376`) |
 | CURR/QUAN com a moeda "oculta na mesma estrutura" vinda de OUTRA tabela (`EKPO.NETWR` com `EKKO.WAERS`) | o gerador recusa; o plano mostra `moeda_unidade.situacao`, e a saída é o cast ou a VDM. Referência da própria tabela (`EKPO.MENGE` com `EKPO.MEINS`) grava |
-| Percentual | `DIVISION(a, b, casas)`, nunca `/` |
-| Ações (§8) | `acoes=[{template, nome, descricao, icone, include, motivo, confirmar: {titulo, mensagem, ok, cancelar}, exibir_em, ao_executar, atualizar_apos_executar}]`; "nenhuma" é `acoes=[]` |
+| Percentual | `DIVISION(a, b, casas)`, nunca `/`; com divisor que pode ser zero, `case when b = 0 then 0 else division(a, b, casas) end` em `modo: 'especialista'` |
+| Ações (§8) | `acoes=[{template, nome, descricao, icone, include, motivo, confirmar: true ou {titulo, mensagem, ok, cancelar}, exibir_em, ao_executar, atualizar_apos_executar}]`; "nenhuma" é `acoes=[]` |
 | Filtros visíveis, ordenação, autorização (§9) | `filtros_lista`, `ordenacao`, `autorizacao` (o campo do objeto tem de estar na M) |
 | Filtros fixos (WHERE) | `filtros`, na fonte |
 

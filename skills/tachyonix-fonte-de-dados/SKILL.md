@@ -82,7 +82,10 @@ gerador de CDS cobra:
 - **Média** (`AVG`) leva o tipo do resultado; o MCP põe `AS abap.dec(23,2)`
   quando a fórmula não traz um.
 - **Divisão nunca com `/`**: use `DIVISION(a, b, casas)` ou `DIV(a, b)`. A
-  barra só funciona em FLTP e o resto volta 400 sem texto.
+  barra só funciona em FLTP e o resto volta 400 sem texto. **Divisor que
+  pode ser zero** derruba a leitura do serviço (500) na linha com zero:
+  `case when b = 0 then 0 else division(a, b, casas) end`, em
+  `modo: 'especialista'`.
 - **Agregação e CASE não convivem na mesma fonte `servico`/`consulta`**: o
   CASE não entra no GROUP BY. Agregue na fonte e faça o CASE na aplicação,
   ou use `cubo`/`analitica`.

@@ -37,6 +37,14 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 - **403 nos serviços depois de uma edição que falhou**: o gerador remove os
   CDS antes de recriar. O MCP já regrava a versão anterior (`restauracao`);
   se ela não voltou, corrija o motivo e grave de novo.
+- **403 `/IWFND/MED/101` num CDS** (o `motivo` em `run_backend_validation`):
+  o serviço está registrado e o nó ICF dele não foi criado. Esperar não
+  resolve. Acontece quando várias aplicações são gravadas ao mesmo tempo no
+  mesmo sistema: grave uma por vez. Uma nova gravação da aplicação publica os
+  serviços de novo.
+- **`ok` do `run_backend_validation`** é o da aplicação inteira: um CDS fora
+  basta para a tela não abrir. `aplicacao_lida: false` é GUID que o sistema
+  não devolve; confira o GUID antes de recriar.
 - **Timeout do cliente** numa criação longa: a aplicação pode ter nascido
   assim mesmo. Procure-a (`list_apps`, ou pelo pacote em `list_packages`)
   antes de repetir, ou nasce em dobro.
@@ -50,6 +58,7 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 | Mensagem ou sintoma | Causa | Saída |
 |---|---|---|
 | 400 com `/` num calculado | o CDS só divide FLTP com a barra | `DIVISION(a, b, casas)` ou `DIV(a, b)` |
+| 500 `RAISE_SHORTDUMP` na leitura de um CDS, com o `$count` em 200 | um calculado divide por uma coluna que é zero em alguma linha | `case when <divisor> = 0 then 0 else division(a, <divisor>, casas) end`, `modo: 'especialista'` |
 | 400 com valor CURR/QUAN | a moeda/unidade não está na mesma estrutura, ou mora em outra tabela | traga a referência junto, use a VDM, ou `cast(...)` com a concordância do usuário |
 | total CURR/QUAN de uma fonte recusado na aplicação, com referência `DDDDLCHARTYPES` | a fonte somou sem ligar a moeda ao total | regrave o campo na fonte (`update_app_special_fields`) com a moeda nos campos dela |
 | `/TACHYON/MESSAGES/137` "Método: Activate" | o CDS passou na sintaxe e falhou na ativação; o gerador corta o motivo | leia `leitura_da_ativacao`; antes de mudar a spec, confira se a mesma grava em outro sistema |
