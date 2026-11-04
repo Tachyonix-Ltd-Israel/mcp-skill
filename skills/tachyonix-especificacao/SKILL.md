@@ -198,7 +198,9 @@ declare o valor usado.
   itens), não o número. `run_backend_validation` confere os dois no serviço
   gerado: `contagem=true` dá o total de linhas de cada CDS, e
   `conferir_soma={total, itens, chave}` compara o total de um documento com
-  a soma dos itens dele.
+  a soma dos itens dele. Numa Tabela, `conferir_chaves=true` conta as linhas
+  da fonte com alguma chave em branco: o gerador as filtra sem erro, e a
+  amostra da soma pode não passar por elas.
 - **Tabela física prescrita, VDM disponível**: `map_source_fields(origem,
   destino, campos)` diz, campo a campo, o equivalente na VDM e o que ela não
   tem — é o que decide se a troca é viável antes de propô-la.

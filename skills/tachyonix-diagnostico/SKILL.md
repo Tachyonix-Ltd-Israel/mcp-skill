@@ -22,6 +22,7 @@ o gerador disse o motivo exato.
 | 500 do gerador | `error` traz o código do dump (`GETWA_NOT_ASSIGNED`, ST22); `ultima_etapa_do_gerador`, quando vem, é o último passo que ele concluiu |
 | gravou, mas algo está estranho | `run_backend_validation(guid, log=true)`: o diário do último build |
 | gravou, e o dado não é o esperado | `run_backend_validation(guid, preview=5)`: as linhas de cada CDS gerado; `contagem=true` e `conferir_soma` conferem totais |
+| a Tabela traz menos linhas que a fonte | `run_backend_validation(guid, conferir_chaves=true)`: `filhas_parciais` conta as linhas com cada chave em branco, que o gerador filtra sem erro |
 
 A mensagem do topo de um 400 é quase sempre a genérica "Exception raised
 without specific error"; o motivo está em `mensagens_do_gerador`. Só quando
@@ -32,6 +33,12 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 
 - **Parâmetro recusado**: a ferramenta não o declara; a mensagem diz qual
   ferramenta o tem. Não reenvie em outro nome.
+- **`resposta_perdida`** (502, 503, 504 ou tempo esgotado na gravação): ela
+  saiu e a resposta não voltou. Com `ok: true`, a aplicação está no sistema:
+  siga com o `guid`. Com `stage: 'resposta_perdida'`, ela pode ter falhado ou
+  o gerador ainda pode estar rodando: espere alguns minutos e chame de novo,
+  sem mudar o nome, porque a recusa do NomeSAP traz o GUID se ela gravou.
+  Repetir sem conferir duplica a aplicação.
 - **403 só na gravação**: sessão/CSRF do servidor ligando para si mesmo. É
   configuração do sistema; avise o usuário, não repita.
 - **403 nos serviços depois de uma edição que falhou**: o gerador remove os
@@ -39,11 +46,10 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
   se ela não voltou, corrija o motivo e grave de novo.
 - **403 `/IWFND/MED/101` num CDS** (o `motivo` em `run_backend_validation`):
   o serviço está registrado e o nó ICF dele não foi criado. Esperar não
-  resolve. Acontece quando várias aplicações são gravadas ao mesmo tempo no
-  mesmo sistema. Uma nova gravação da aplicação publica os serviços de novo.
-- **Gravação recusada com "outra gravação de aplicação está em andamento"**:
-  o MCP grava uma aplicação por vez no mesmo sistema e esperou a vez sem
-  conseguir. Nada foi gravado; chame de novo em seguida, sem mudar nada.
+  resolve: uma nova gravação da aplicação publica os serviços de novo. Se
+  acontecer com gravações em paralelo, o gerador do sistema não tem a
+  correção que confere o nó: grave uma aplicação por vez e peça a
+  atualização do Builder.
 - **`ok` do `run_backend_validation`** é o da aplicação inteira: um CDS fora
   basta para a tela não abrir, e `conferir_soma` que não bate também o põe em
   `false`. `ok: null` com `sem_servico_proprio` é cubo ou consulta, que não
@@ -73,8 +79,11 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 | 400 com `/` num calculado | o CDS só divide FLTP com a barra | `DIVISION(a, b, casas)` ou `DIV(a, b)` |
 | 500 `RAISE_SHORTDUMP` na leitura de um CDS, com o `$count` em 200 | um calculado divide por uma coluna que é zero em alguma linha | `case when <divisor> = 0 then 0 else division(a, <divisor>, casas) end`, `modo: 'especialista'` |
 | 400 com valor CURR/QUAN | a moeda/unidade não está na mesma estrutura, ou mora em outra tabela | traga a referência junto, use a VDM, ou `cast(...)` com a concordância do usuário |
+| 400 `DDLS 290` «CAST… SEARCHED CASE WHEN» (view clássica, 1909) | `cast` na condição de um `case when` | compare a coluna nua no `when`, mesmo a monetária; o `cast` fica só onde o valor vira resultado |
+| analítica com 403 `/IWFND/MED/170` ou 500 `CX_RSR_QUERY_OPEN_ERROR`, ou a criação parada no «Add Service» | o cubo conta (`COUNT_DISTINCT`) um elemento com chave estrangeira na VDM de origem | na fonte, exponha a coluna por `cast( <VDM>.<CAMPO> as abap.char(<n>) )`, conte essa coluna e grave o cubo e a analítica de novo; o plano do cubo avisa |
 | total CURR/QUAN de uma fonte recusado na aplicação, com referência `DDDDLCHARTYPES` | a fonte somou sem ligar a moeda ao total | regrave o campo na fonte (`update_app_special_fields`) com a moeda nos campos dela |
-| `/TACHYON/MESSAGES/137` "Método: Activate" | o CDS passou na sintaxe e falhou na ativação; o gerador corta o motivo | leia `leitura_da_ativacao`; antes de mudar a spec, confira se a mesma grava em outro sistema |
+| `/TACHYON/MESSAGES/151` "Não foi possível ativar o CDS" | o CDS passou na sintaxe e falhou na ativação | o motivo vem nas mensagens logo abaixo dela: corrija por elas e leia `leitura_da_ativacao`. As vizinhas, de 147 a 158, dizem em que etapa a gravação parou (gravar, sintaxe, pacote, ordem, ativação, leitura, ATC, serviço OData), com o detalhe logo abaixo |
+| `/TACHYON/MESSAGES/137` "Método: Activate" (gerador anterior e API RAP) | o mesmo, com o motivo cortado em 50 caracteres | leia `leitura_da_ativacao`; antes de mudar a spec, confira se a mesma grava em outro sistema |
 | `SDDL_PARSER_MSG/024` "não está na GROUP BY" | agregação sobre coluna fora do agrupamento | deixe o MCP envelopar; não escreva `SUM(` à mão no calculado da fonte |
 | 400 com agregação + CASE | o CASE não entra no GROUP BY | CASE na aplicação, ou fonte `cubo`/`analitica` |
 | `SDDL_PARSER_MSG/005` "name not unique" | o mesmo nome em duas estruturas | alias com sufixo da estrutura (o MCP faz sozinho; não copie campo de outra app) |

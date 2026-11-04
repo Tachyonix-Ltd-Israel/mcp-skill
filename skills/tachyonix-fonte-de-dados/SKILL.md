@@ -85,7 +85,9 @@ gerador de CDS cobra:
   barra só funciona em FLTP e o resto volta 400 sem texto. **Divisor que
   pode ser zero** derruba a leitura do serviço (500) na linha com zero:
   `case when b = 0 then 0 else division(a, b, casas) end`, em
-  `modo: 'especialista'`.
+  `modo: 'especialista'`. Na condição do `when` a coluna vai nua, mesmo a
+  monetária: a comparação não precisa de `cast`, e a view clássica (1909)
+  recusa `cast` ali.
 - **Agregação e CASE não convivem na mesma fonte `servico`/`consulta`**: o
   CASE não entra no GROUP BY. Agregue na fonte e faça o CASE na aplicação,
   ou use `cubo`/`analitica`.
