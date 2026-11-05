@@ -22,6 +22,7 @@ o gerador disse o motivo exato.
 | 500 do gerador | `error` traz o código do dump (`GETWA_NOT_ASSIGNED`, ST22); `ultima_etapa_do_gerador`, quando vem, é o último passo que ele concluiu |
 | gravou, mas algo está estranho | `run_backend_validation(guid, log=true)`: o diário do último build |
 | gravou, e o dado não é o esperado | `run_backend_validation(guid, preview=5)`: as linhas de cada CDS gerado; `contagem=true` e `conferir_soma` conferem totais |
+| a tela abre, e o número parece errado | `run_backend_validation(guid, conferir_conteudo=true)`: `fan_out` (o join multiplicou as linhas), `medida_zerada` (a medida veio zero em todas as linhas lidas) e `somas` (o total da lista contra a soma dos itens) |
 | a Tabela traz menos linhas que a fonte | `run_backend_validation(guid, conferir_chaves=true)`: `filhas_parciais` conta as linhas com cada chave em branco, que o gerador filtra sem erro |
 
 A mensagem do topo de um 400 é quase sempre a genérica "Exception raised
@@ -65,8 +66,9 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
   no 1909. O plano avisa; a saída é `chave_vazia` no campo, onde o sistema tem
   a opção, ou tirar o campo da chave da Tabela.
 - **Timeout do cliente** numa criação longa: a aplicação pode ter nascido
-  assim mesmo. Procure-a (`list_apps`, ou pelo pacote em `list_packages`)
-  antes de repetir, ou nasce em dobro.
+  assim mesmo. Confira antes de repetir, ou ela nasce em dobro:
+  `get_app_for_edit(<NomeSAP>, resumo=true)` responde na hora; sem NomeSAP,
+  `list_apps(busca=)` ou o pacote em `list_packages`.
 - **`preview` vazio numa `consulta`**: ela não publica serviço próprio;
   confira na aplicação que a consome. Num `servico`, vazio é o filtro.
 - **Aplicação não aparece na lista do Builder**: a descrição nasce no idioma
