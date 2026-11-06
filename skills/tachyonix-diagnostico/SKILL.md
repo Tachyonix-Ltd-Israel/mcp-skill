@@ -45,6 +45,20 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 - **403 nos serviços depois de uma edição que falhou**: o gerador remove os
   CDS antes de recriar. O MCP já regrava a versão anterior (`restauracao`);
   se ela não voltou, corrija o motivo e grave de novo.
+- **`disputa` na resposta**: a gravação caiu pela ordem de transporte ou pelo nó
+  ICF, não pela spec, e o erro muda de lugar a cada tentativa. Com
+  `repetir_mesmo_payload: true`, repita a mesma chamada depois de `retry_after_s`,
+  sem mudar o payload. Com `nome_preso`, a tentativa anterior deixou o objeto com
+  este NomeSAP (`DDLS/322`): grave com outro. Com `possivel`, só é disputa se havia
+  outra gravação na mesma ordem; sozinho, o motivo é da spec.
+- **`stage: 'fila'`**: a ordem está sendo gravada por outra chamada, e nada foi
+  gravado. Repita a mesma chamada. Para gravar em paralelo, dê a cada agente o seu
+  par de ordens: na mesma ordem as gravações se derrubam (medido: 3 de 24 gravaram;
+  com uma ordem para cada processo, 22 de 24).
+- **A lista com total errado sobre um cubo ou uma analítica**: lidos como view, eles
+  devolvem as linhas de origem, sem agregar; só o serviço analítico agrega. Monte a
+  lista sobre uma Fonte de Dados com a agregação. `conferir_conteudo` mostra em
+  `fonte_sem_agregar`.
 - **403 `/IWFND/MED/101` num CDS** (o `motivo` em `run_backend_validation`):
   o serviço está registrado e o nó ICF dele não foi criado. Esperar não
   resolve: uma nova gravação da aplicação publica os serviços de novo. Se
@@ -84,12 +98,14 @@ ela não vem (`como_ver_o_motivo` diz isso) vale aplicar a parte suspeita por
 | 400 `SD_CDS_ENTITY/102` «Basisobjekt … vom Typ VIEW» | a fonte é uma view clássica, e a geração deste sistema é view entity | use a entidade CDS dela (`check_proxy_table` da tabela original a indica) ou a VDM standard |
 | 400 `DDLS 290` «CAST… SEARCHED CASE WHEN» (view clássica, 1909) | `cast` na condição de um `case when` | compare a coluna nua no `when`, mesmo a monetária; o `cast` fica só onde o valor vira resultado |
 | analítica com 403 `/IWFND/MED/170` ou 500 `CX_RSR_QUERY_OPEN_ERROR`, ou a criação parada no «Add Service» | o cubo conta (`COUNT_DISTINCT`) um elemento com chave estrangeira na VDM de origem | na fonte, exponha a coluna por `cast( <VDM>.<CAMPO> as abap.char(<n>) )`, conte essa coluna e grave o cubo e a analítica de novo; o plano do cubo avisa |
+| a criação parada no `Publish_locally` ou no «Add Service», fora de cubo e analítica | o serviço não publica: sem campo chave, ou o nome é comprido demais | o MCP confere os dois antes de gravar; num payload montado à mão, confira a chave e o tamanho do `nome_sap`. O motivo inteiro está em `/IWBEP/ERROR_LOG` |
 | total CURR/QUAN de uma fonte recusado na aplicação, com referência `DDDDLCHARTYPES` | a fonte somou sem ligar a moeda ao total | regrave o campo na fonte (`update_app_special_fields`) com a moeda nos campos dela |
 | `/TACHYON/MESSAGES/151` "Não foi possível ativar o CDS" | o CDS passou na sintaxe e falhou na ativação | o motivo vem nas mensagens logo abaixo dela: corrija por elas e leia `leitura_da_ativacao`. As vizinhas, de 147 a 158, dizem em que etapa a gravação parou (gravar, sintaxe, pacote, ordem, ativação, leitura, ATC, serviço OData), com o detalhe logo abaixo |
 | `/TACHYON/MESSAGES/137` "Método: Activate" (gerador anterior e API RAP) | o mesmo, com o motivo cortado em 50 caracteres | leia `leitura_da_ativacao`; antes de mudar a spec, confira se a mesma grava em outro sistema |
 | `SDDL_PARSER_MSG/024` "não está na GROUP BY" | agregação sobre coluna fora do agrupamento | deixe o MCP envelopar; não escreva `SUM(` à mão no calculado da fonte |
 | 400 com agregação + CASE | o CASE não entra no GROUP BY | CASE na aplicação, ou fonte `cubo`/`analitica` |
-| `SDDL_PARSER_MSG/005` "name not unique" | o mesmo nome em duas estruturas | alias com sufixo da estrutura (o MCP faz sozinho; não copie campo de outra app) |
+| `SDDL_PARSER_MSG/005` "name not unique" | o mesmo nome em duas estruturas | o MCP resolve sozinho: no relatório, com o sufixo da estrutura; no formulário, a coluna da lista usa o alias dela, com a marca `carac.MasterField`. Não copie alias de outra app |
+| Toda ação da aplicação falha com `/TACHYON/MESSAGES/106`, com HTTP 201 | a edição não mudou o CDS, e sem mudança no CDS o gerador não regera as classes das ações: o tipo delas ficou em branco (`acoes_sem_tipo`, na edição e em `run_backend_validation`) | faça uma edição que mude o CDS, como trocar um rótulo em `configure_app_fields`. Vale também para um include trocado que não entrou na classe da ação |
 | 400 na API RAP sem texto | `prefixo_sap` com mais de 5 caracteres | prefixo de até 5 |
 | `SDDL_PARSER_MSG/017` "table unknown" | fonte citada sem estar na consulta | acrescente a fonte em `tabelas` (criação) ou `update_app_columns(fontes=...)` |
 

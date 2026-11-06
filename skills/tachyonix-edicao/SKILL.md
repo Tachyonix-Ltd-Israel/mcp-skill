@@ -37,6 +37,7 @@ leitura, e a estrutura perde os campos.
 | trocar painéis ou abas por títulos | `remove_app_structures(paineis=[...])` e depois `layout_app_form`, juntos em `update_app_batch` |
 | título, descrição, ícone, tile, vigência | `update_app` |
 | fazer uma cópia | `copy_app` |
+| repetir uma aplicação que funciona sobre outra fonte | `copy_app(trocar_fontes=[{de, para, campos?}])`, conferindo antes com `dry_run=true` |
 | **várias das mudanças acima na mesma aplicação** | `update_app_batch` |
 
 ## 3. Como chamar
@@ -61,8 +62,8 @@ com `rotulos`.
 - **Não use o `resumo` para regravar** nem monte o payload à mão.
   `update_app_full` é o último recurso, e só com o payload **completo** de
   `get_app_for_edit` (sem `resumo`).
-- **Não guarde GUID de campo entre gravações**: todo save regera os
-  `GuidCampo`. Leia de novo imediatamente antes de usar.
+- **O `GuidCampo` sai de `get_app_for_edit`**: ele não muda entre gravações, a não
+  ser que o campo saia e volte. O que não existe é recusado.
 - **Não apague**: aplicação não se exclui pelo conector. `deactivate_app`
   inativa e `activate_app` volta; as duas exigem `confirm=true`.
 

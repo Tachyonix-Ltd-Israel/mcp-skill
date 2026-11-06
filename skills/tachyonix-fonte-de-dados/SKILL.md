@@ -126,12 +126,17 @@ e o valor é numérico.
 
 ## 6. Crie e confira
 
+**Fonte de Dados não tem tela:** não há `runtime_url`. Para ver o dado, use
+`run_backend_validation(guid, preview=5)`; para entregar um link que abre, crie uma
+aplicação sobre a fonte.
+
 1. `plan_component(tipo='servico', ...)` ou `create_component(...,
    plan=true)`: leia impedimentos e decisões pendentes. Quando a fonte é um
    passo de uma cadeia (a soma, a base, o cubo, a analítica e a aplicação
    sobre elas), planeje a cadeia inteira com `plan_chain`: o passo que cita a
    fonte de um passo anterior a lê pela estrutura simulada.
-2. Pergunte o destino e o nome técnico (`nome_sap`, prefixo Y).
+2. Pergunte o destino e o nome técnico (`nome_sap`, prefixo Y ou Z, até 22 na fonte que
+   publica serviço e até 28 nas outras).
 3. `create_component(tipo=..., descricao=..., nome_sap=..., guid_pacote=...,
    transporte=..., tabela=..., campos=..., filtros=..., campos_especiais=...)`.
 4. `run_backend_validation(guid, preview=5)`: num `servico`, as linhas vêm da

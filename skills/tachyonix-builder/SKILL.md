@@ -63,7 +63,9 @@ usuário, não do agente.
 
 ## Regras que valem sempre
 
-- **Nome técnico** (`nome_sap`): prefixo Y, maiúsculas, até 29 caracteres. A
+- **Nome técnico** (`nome_sap`): prefixo Y ou Z, maiúsculas, só letras, dígitos e `_`. Até 29
+  na aplicação; na Fonte de Dados, até 22 na que publica serviço (`servico`, `api`,
+  `analitica`) e até 28 nas outras. A
   API RAP não tem nome: a identidade dela é o `prefixo_sap`, de até 5.
 - **Português com acentuação** em tudo que o usuário lê: `descricao`,
   `rotulos`, estruturas e botões. O alias é identificador e fica sem acento;

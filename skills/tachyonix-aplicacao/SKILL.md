@@ -28,6 +28,11 @@ próprio valor no lugar do total.
 | `modelless`, `lista_trabalho` | os dados vêm de includes ABAP, não de consulta |
 | `entrada` | formulário de entrada de dados |
 
+**Lista agregada não vai sobre cubo nem analítica.** Eles só agregam no serviço
+analítico: lidos como view, devolvem as linhas de origem, e o total da lista não
+confere. O gráfico sobre eles continua certo, porque lê pelo serviço. Para a lista,
+use uma Fonte de Dados `consulta` ou `servico` com a agregação.
+
 ## 2. As perguntas que não têm default
 
 Faça-as de uma vez, junto com as `decisoes_pendentes` do plano:
